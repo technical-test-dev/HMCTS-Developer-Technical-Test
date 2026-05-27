@@ -1,0 +1,15 @@
+{% extends "layouts/base.njk" %}
+{% from "components/task-form-fields.njk" import taskFormFields %}
+
+{% block pageTitle %}{% if errors %}Error: {% endif %}Edit task — Caseworker Task Manager{% endblock %}
+
+{% block content %}
+<a href="/tasks/{{ task.id }}" class="govuk-back-link">Back to task</a>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Edit task</h1>
+    {{ taskFormFields('/tasks/' + task.id + '/edit', values or {}, errors, 'edit', 'Save changes', '/tasks/' + task.id) }}
+  </div>
+</div>
+{% endblock %}

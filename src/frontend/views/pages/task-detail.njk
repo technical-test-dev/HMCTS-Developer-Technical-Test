@@ -1,0 +1,84 @@
+{% extends "layouts/base.njk" %}
+{% from "components/success-toast.njk" import successToast %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block pageTitle %}{{ task.title }} — Caseworker Task Manager{% endblock %}
+
+{% block content %}
+<a href="/" class="govuk-back-link">Back to tasks</a>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {{ successToast(notice, noticeStatus) }}
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-4">{{ task.title }}</h1>
+
+    <p class="govuk-body govuk-!-margin-bottom-6">
+      {% if task.overdue %}
+        {{ govukTag({ text: "Overdue", classes: "govuk-tag--red" }) }}
+      {% elif task.group == 'DUE_TODAY' %}
+        {{ govukTag({ text: "Due today", classes: "govuk-tag--yellow" }) }}
+      {% elif task.status == 'IN_PROGRESS' %}
+        {{ govukTag({ text: "In progress", classes: "govuk-tag--blue" }) }}
+      {% elif task.status == 'NOT_STARTED' %}
+        {{ govukTag({ text: "Not started", classes: "govuk-tag--grey" }) }}
+      {% else %}
+        <span class="govuk-body govuk-!-font-weight-bold">Completed</span>
+      {% endif %}
+    </p>
+
+    {{ govukSummaryList({
+      rows: [
+        { key: { text: "Title" }, value: { text: task.title } },
+        { key: { text: "Description" }, value: { html: task.description if task.description else '<span class="govuk-hint govuk-!-margin-bottom-0">No description</span>' } },
+        { key: { text: "Status" }, value: { text: STATUS_LABELS[task.status] } },
+        { key: { text: "Due" }, value: { text: task.dueDateTime | govukDateTime } },
+        { key: { text: "Created" }, value: { text: task.createdAt | govukDateTime } },
+        { key: { text: "Last updated" }, value: { text: task.updatedAt | govukDateTime } }
+      ]
+    }) }}
+
+    {# Change status: posts to the page route, which redirects back here with a success toast. #}
+    <form method="post" action="/tasks/{{ task.id }}/status" class="app-status-form govuk-!-margin-bottom-6">
+      <div class="govuk-form-group govuk-!-margin-bottom-2">
+        <label class="govuk-label govuk-label--s" for="status-select">Change status</label>
+        <select class="govuk-select" id="status-select" name="status">
+          {% for value, label in STATUS_LABELS %}
+          <option value="{{ value }}"{% if task.status == value %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">Update status</button>
+    </form>
+
+    <div class="govuk-button-group">
+      <a class="govuk-button" data-module="govuk-button" href="/tasks/{{ task.id }}/edit">Edit task</a>
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="button" data-delete-modal-open>Delete task</button>
+      <a class="govuk-link" href="/">Back to tasks</a>
+    </div>
+
+  </div>
+</div>
+
+<dialog class="app-modal" aria-labelledby="delete-task-title" aria-describedby="delete-task-description" data-delete-modal>
+  <button class="app-modal__close" type="button" aria-label="Close delete confirmation" data-delete-modal-cancel>&times;</button>
+
+  <div class="app-modal__content">
+    <h2 class="govuk-heading-l" id="delete-task-title">Delete task</h2>
+    <p class="govuk-body" id="delete-task-description">You are about to delete:</p>
+    <p class="govuk-body govuk-!-font-weight-bold">{{ task.title }}</p>
+
+    {{ govukWarningText({ text: "This action cannot be undone.", iconFallbackText: "Warning" }) }}
+
+    <form method="post" action="/tasks/{{ task.id }}/delete">
+      <div class="govuk-button-group govuk-!-margin-bottom-0">
+        <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">Delete task</button>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="button" data-delete-modal-cancel>Cancel</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+{% endblock %}

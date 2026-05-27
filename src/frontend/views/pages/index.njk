@@ -1,0 +1,35 @@
+{% extends "layouts/base.njk" %}
+{% from "components/task-list.njk" import groupedTasks %}
+{% from "components/success-toast.njk" import successToast %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block pageTitle %}Caseworker tasks — Caseworker Task Manager{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ successToast(notice) }}
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-3">Caseworker tasks</h1>
+    <p class="govuk-body">
+      Review your workload at a glance. Tasks are grouped by urgency so you can
+      see what needs attention first. Select a task to view or update it.
+    </p>
+    {{ govukButton({ text: "Create task", href: "/tasks/new", classes: "app-primary-action" }) }}
+  </div>
+
+  <div class="govuk-grid-column-full">
+    {{ groupedTasks(groups, query) }}
+
+    {% if pagination and pagination.total > 0 %}
+    <p class="govuk-body govuk-!-margin-bottom-2">
+      Showing <strong>{{ pagination.from }}</strong> to <strong>{{ pagination.to }}</strong> of <strong>{{ pagination.total }}</strong> matching tasks
+    </p>
+    {% endif %}
+
+    {% if pagination and pagination.nav %}
+    {{ govukPagination(pagination.nav) }}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

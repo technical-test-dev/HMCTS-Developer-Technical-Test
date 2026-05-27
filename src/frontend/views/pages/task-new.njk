@@ -1,0 +1,15 @@
+{% extends "layouts/base.njk" %}
+{% from "components/task-form-fields.njk" import taskFormFields %}
+
+{% block pageTitle %}{% if errors %}Error: {% endif %}Create task — Caseworker Task Manager{% endblock %}
+
+{% block content %}
+<a href="/" class="govuk-back-link">Back to tasks</a>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Create task</h1>
+    {{ taskFormFields('/tasks', values or {}, errors, 'create', 'Create task', '/') }}
+  </div>
+</div>
+{% endblock %}

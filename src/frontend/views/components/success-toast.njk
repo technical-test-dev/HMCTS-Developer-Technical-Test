@@ -1,0 +1,23 @@
+{# Uses GOV.UK's notification banner as the accessible no-JS baseline, then
+   task-manager.js enhances the wrapper into a temporary toast when JS is on. #}
+
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% macro successToast(notice, statusValue) %}
+  {% set message = "" %}
+  {% if notice == 'created' %}
+    {% set message = "Task created successfully." %}
+  {% elif notice == 'updated' %}
+    {% set message = "Task updated successfully." %}
+  {% elif notice == 'deleted' %}
+    {% set message = "Task deleted successfully." %}
+  {% elif notice == 'status' and STATUS_LABELS[statusValue] %}
+    {% set message = "Task status changed to " + STATUS_LABELS[statusValue] + "." %}
+  {% endif %}
+
+  {% if message %}
+    <div class="app-toast" data-success-toast>
+      {{ govukNotificationBanner({ type: 'success', text: message }) }}
+    </div>
+  {% endif %}
+{% endmacro %}

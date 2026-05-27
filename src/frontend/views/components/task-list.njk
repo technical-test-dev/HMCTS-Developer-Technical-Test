@@ -1,0 +1,88 @@
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
+
+{% macro filterBar(query) %}
+{% set query = query or {} %}
+<form method="get" action="/" class="app-filter-panel govuk-!-margin-bottom-6" data-filter-form>
+  <div class="app-filter-bar">
+    <div class="govuk-form-group govuk-!-margin-bottom-0">
+      <label class="govuk-label govuk-label--s" for="filter-status">Status filter</label>
+      <select class="govuk-select" id="filter-status" name="status">
+        <option value=""{% if not query.status %} selected{% endif %}>All statuses</option>
+        <option value="OVERDUE"{% if query.status == 'OVERDUE' %} selected{% endif %}>Overdue</option>
+        {% for value, label in STATUS_LABELS %}
+        <option value="{{ value }}"{% if query.status == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="govuk-form-group govuk-!-margin-bottom-0">
+      <label class="govuk-label govuk-label--s" for="filter-sort">Sort by</label>
+      <select class="govuk-select" id="filter-sort" name="sort">
+        {% for value, option in SORT_OPTIONS %}
+        <option value="{{ value }}"{% if query.sort == value %} selected{% endif %}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="app-filter-actions govuk-button-group govuk-!-margin-bottom-0">
+    {# Submitted automatically on change when JS is on; this button is the no-JS fallback. #}
+    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0 app-no-js-only" data-module="govuk-button" type="submit">Apply filters</button>
+    {% if query.status or (query.sort and query.sort != 'due_asc') %}
+    <a class="govuk-link" href="/">Clear filters</a>
+    {% endif %}
+  </div>
+</form>
+{% endmacro %}
+
+{# Renders one urgency group as a GOV.UK Task List. #}
+{% macro groupList(group, tasks) %}
+{% set meta = GROUP_META[group] %}
+{% if tasks and tasks.length > 0 %}
+  <section class="app-task-group{% if group == 'COMPLETED' %} app-task-group--completed{% endif %}" aria-labelledby="group-{{ meta.idPrefix }}">
+    <h2 class="govuk-heading-m" id="group-{{ meta.idPrefix }}">{{ meta.heading }} ({{ tasks.length }})</h2>
+    {% set items = [] %}
+    {% for task in tasks %}
+      {% if task.overdue %}
+        {% set status = { tag: { text: 'Overdue', classes: 'govuk-tag--red' } } %}
+      {% elif task.group == 'DUE_TODAY' %}
+        {% set status = { tag: { text: 'Due today', classes: 'govuk-tag--yellow' } } %}
+      {% elif task.status == 'IN_PROGRESS' %}
+        {% set status = { tag: { text: 'In progress', classes: 'govuk-tag--blue' } } %}
+      {% elif task.status == 'NOT_STARTED' %}
+        {% set status = { tag: { text: 'Not started', classes: 'govuk-tag--grey' } } %}
+      {% else %}
+        {% set status = { text: 'Completed' } %}
+      {% endif %}
+      {% set items = items.concat([{
+        title: { text: task.title },
+        href: '/tasks/' + task.id,
+        hint: { text: 'Due ' + (task.dueDateTime | govukDateTime) },
+        status: status,
+        classes: 'app-task-list__item--completed' if task.status == 'COMPLETED' else ''
+      }]) %}
+    {% endfor %}
+    {{ govukTaskList({ idPrefix: meta.idPrefix, items: items, classes: 'app-task-list--completed' if group == 'COMPLETED' else '' }) }}
+  </section>
+{% endif %}
+{% endmacro %}
+
+{# The full grouped list, in fixed urgency order, plus a single inset message
+   when a status filter matches nothing. #}
+{% macro groupedTasks(groups, query) %}
+{{ filterBar(query) }}
+{% set anyTasks = groups.OVERDUE.length + groups.DUE_TODAY.length + groups.UPCOMING.length + groups.COMPLETED.length %}
+{% if anyTasks == 0 and query.status %}
+<div class="govuk-inset-text">
+  No tasks match the selected filter. <a class="govuk-link" href="/">Clear the filter</a> to see all tasks.
+</div>
+{% elif anyTasks == 0 %}
+<div class="govuk-inset-text">
+  There are no tasks yet. <a class="govuk-link" href="/tasks/new">Create your first task</a>.
+</div>
+{% else %}
+  {% for group in GROUP_ORDER %}
+    {{ groupList(group, groups[group]) }}
+  {% endfor %}
+{% endif %}
+{% endmacro %}

@@ -1,0 +1,103 @@
+
+{% macro taskFormFields(action, values, errors, idPrefix, submitLabel, cancelHref) %}
+<form method="post" action="{{ action }}" class="app-task-form" novalidate x-data="taskForm" @submit="submit">
+
+  {# Server-rendered error summary #}
+  {% if errors %}
+  <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">There is a problem</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__error-list">
+          {% for field, message in errors %}
+          <li><a href="#{{ idPrefix }}-{{ field }}">{{ message }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# Alpine-rendered error summary (JS) #}
+  <div class="govuk-error-summary" data-module="govuk-error-summary"
+       tabindex="-1" x-ref="summary" x-show="hasErrors" style="display:none">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">There is a problem</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__error-list">
+          <template x-for="(message, field) in errors" :key="field">
+            <li><a :href="'#{{ idPrefix }}-' + field" x-text="message"></a></li>
+          </template>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {# Title #}
+  <div class="govuk-form-group{% if errors.title %} govuk-form-group--error{% endif %}"
+       :class="{ 'govuk-form-group--error': errors.title }">
+    <label class="govuk-label" for="{{ idPrefix }}-title">Title</label>
+    <div id="{{ idPrefix }}-title-hint" class="govuk-hint">Required. Maximum 100 characters.</div>
+    <p class="govuk-error-message" id="{{ idPrefix }}-title-error"
+       {% if not errors.title %}style="display:none"{% endif %} x-show="errors.title">
+      <span class="govuk-visually-hidden">Error:</span>
+      <span x-text="errors.title">{{ errors.title }}</span>
+    </p>
+    <input class="govuk-input{% if errors.title %} govuk-input--error{% endif %}"
+           :class="{ 'govuk-input--error': errors.title }"
+           id="{{ idPrefix }}-title" name="title" type="text" maxlength="100"
+           aria-describedby="{{ idPrefix }}-title-hint {{ idPrefix }}-title-error"
+           value="{{ values.title }}" />
+  </div>
+
+  {# Description #}
+  <div class="govuk-form-group{% if errors.description %} govuk-form-group--error{% endif %}"
+       :class="{ 'govuk-form-group--error': errors.description }">
+    <label class="govuk-label" for="{{ idPrefix }}-description">Description</label>
+    <div id="{{ idPrefix }}-description-hint" class="govuk-hint">Optional. Maximum 500 characters.</div>
+    <p class="govuk-error-message" id="{{ idPrefix }}-description-error"
+       {% if not errors.description %}style="display:none"{% endif %} x-show="errors.description">
+      <span class="govuk-visually-hidden">Error:</span>
+      <span x-text="errors.description">{{ errors.description }}</span>
+    </p>
+    <textarea class="govuk-textarea{% if errors.description %} govuk-textarea--error{% endif %}"
+              :class="{ 'govuk-textarea--error': errors.description }"
+              id="{{ idPrefix }}-description" name="description" rows="3" maxlength="500"
+              aria-describedby="{{ idPrefix }}-description-hint {{ idPrefix }}-description-error">{{ values.description }}</textarea>
+  </div>
+
+  {# Status #}
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="{{ idPrefix }}-status">Status</label>
+    <select class="govuk-select" id="{{ idPrefix }}-status" name="status">
+      {% for value, label in STATUS_LABELS %}
+      <option value="{{ value }}"{% if values.status == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {# Due date/time #}
+  <div class="govuk-form-group{% if errors.dueDateTime %} govuk-form-group--error{% endif %}"
+       :class="{ 'govuk-form-group--error': errors.dueDateTime }">
+    <label class="govuk-label" for="{{ idPrefix }}-dueDateTime">Due date and time</label>
+    <div id="{{ idPrefix }}-dueDateTime-hint" class="govuk-hint">For example, 28 05 2026, 14:30.</div>
+    <p class="govuk-error-message" id="{{ idPrefix }}-dueDateTime-error"
+       {% if not errors.dueDateTime %}style="display:none"{% endif %} x-show="errors.dueDateTime">
+      <span class="govuk-visually-hidden">Error:</span>
+      <span x-text="errors.dueDateTime">{{ errors.dueDateTime }}</span>
+    </p>
+    <input class="govuk-input govuk-input--width-20{% if errors.dueDateTime %} govuk-input--error{% endif %}"
+           :class="{ 'govuk-input--error': errors.dueDateTime }"
+           id="{{ idPrefix }}-dueDateTime" name="dueDateTime" type="datetime-local"
+           aria-describedby="{{ idPrefix }}-dueDateTime-hint {{ idPrefix }}-dueDateTime-error"
+           value="{{ values.dueDateTime | inputDateTime }}" />
+  </div>
+
+  <div class="govuk-button-group">
+    <button class="govuk-button" data-module="govuk-button" type="submit">{{ submitLabel }}</button>
+    {% if cancelHref %}
+    <a class="govuk-link" href="{{ cancelHref }}">Cancel</a>
+    {% endif %}
+  </div>
+</form>
+{% endmacro %}

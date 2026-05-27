@@ -1,0 +1,25 @@
+// Prisma schema for the Caseworker Task Manager.
+// SQLite is used so the technical test runs locally with no external services.
+// Prisma keeps the data layer structured and adaptable to PostgreSQL in production.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Status is stored as a String because SQLite does not support Prisma enums.
+// The NOT_STARTED | IN_PROGRESS | COMPLETED constraint is enforced at the API
+// boundary with Zod and in the shared TypeScript types.
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  status      String   @default("NOT_STARTED")
+  dueDateTime DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# Local databases (do not commit)
+dev.db
+test.db
+*.db
+*.db-journal
+
+# Generated CSS (built from SCSS)
+src/frontend/public/css/app.css
+src/frontend/public/css/app.css.map
+
+# Test coverage
+coverage/
+
+# Logs / OS files
+*.log
+.DS_Store

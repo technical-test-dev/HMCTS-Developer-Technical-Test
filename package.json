@@ -1,0 +1,50 @@
+{
+  "name": "caseworker-task-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A simple task management API and frontend for caseworkers (technical test project).",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -n css,server -c blue,green \"npm:dev:css\" \"npm:dev:server\"",
+    "dev:css": "sass --watch src/frontend/public/scss/app.scss:src/frontend/public/css/app.css --load-path=node_modules --quiet-deps",
+    "dev:server": "tsx watch src/backend/server.ts",
+    "build": "prisma generate && npm run build:css && tsc",
+    "build:css": "sass src/frontend/public/scss/app.scss:src/frontend/public/css/app.css --load-path=node_modules --quiet-deps --style=compressed --no-source-map",
+    "start": "node dist/backend/server.js",
+    "test": "npm run build:css --silent && jest --runInBand",
+    "test:watch": "jest --runInBand --watch",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@koa/bodyparser": "^5.1.1",
+    "@koa/router": "^13.1.0",
+    "@prisma/client": "^6.2.1",
+    "alpinejs": "^3.14.8",
+    "govuk-frontend": "^5.8.0",
+    "koa": "^2.15.3",
+    "koa-mount": "^4.2.0",
+    "koa-static": "^5.0.0",
+    "nunjucks": "^3.2.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/koa": "^2.15.0",
+    "@types/koa__router": "^12.0.4",
+    "@types/koa-mount": "^4.0.5",
+    "@types/koa-static": "^4.0.4",
+    "@types/nunjucks": "^3.2.6",
+    "@types/supertest": "^6.0.2",
+    "concurrently": "^9.1.2",
+    "jest": "^29.7.0",
+    "prisma": "^6.2.1",
+    "sass": "^1.83.4",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
